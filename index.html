@@ -1,10 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="hy">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Տարոնի Խաղը 😎</title>
+<title>Տարոնի Խաղը</title>
 
 <style>
 *{
@@ -19,8 +19,8 @@ body{
     justify-content:center;
     align-items:center;
     min-height:100vh;
-    font-family:Arial,sans-serif;
     overflow:hidden;
+    font-family:Arial,sans-serif;
 }
 
 #gameContainer{
@@ -36,31 +36,19 @@ canvas{
 #gameOver{
     position:absolute;
     inset:0;
-    background:rgba(0,0,0,.9);
+    background:rgba(0,0,0,.92);
     color:white;
     display:none;
+    flex-direction:column;
     justify-content:center;
     align-items:center;
-    flex-direction:column;
     text-align:center;
     padding:20px;
 }
 
-#gameOver h1{
-    color:#ff5555;
-    margin-bottom:10px;
-}
-
-#message{
-    font-size:22px;
-    margin-bottom:15px;
-}
-
 button{
-    margin-top:15px;
     padding:12px 25px;
-    border:none;
-    border-radius:8px;
+    margin-top:15px;
     font-size:18px;
     cursor:pointer;
 }
@@ -70,21 +58,24 @@ button{
 
 <div id="gameContainer">
 
-    <canvas id="game"></canvas>
+<canvas id="game"></canvas>
 
-    <div id="gameOver">
-        <h1>GAME OVER</h1>
+<div id="gameOver">
+    <h1>GAME OVER</h1>
+    <br>
 
-        <div id="message">
-            Ախխխ Տարոն, տունը լավ էիր խաղում 😭
-        </div>
+    <h2>
+        Ախխխ Տարոն, տունը լավ էիր խաղում 😭
+    </h2>
 
-        <div id="finalScore"></div>
+    <br>
 
-        <button onclick="restartGame()">
-            Նորից խաղալ
-        </button>
-    </div>
+    <div id="finalStats"></div>
+
+    <button onclick="restartGame()">
+        Նորից խաղալ
+    </button>
+</div>
 
 </div>
 
@@ -93,53 +84,82 @@ button{
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const gameOverScreen = document.getElementById("gameOver");
-const finalScore = document.getElementById("finalScore");
+const gameOverScreen =
+document.getElementById("gameOver");
+
+const finalStats =
+document.getElementById("finalStats");
 
 function resizeCanvas(){
-    canvas.width = Math.min(window.innerWidth - 20, 420);
-    canvas.height = Math.min(window.innerHeight - 20, 700);
+    canvas.width =
+    Math.min(window.innerWidth - 20, 420);
+
+    canvas.height =
+    Math.min(window.innerHeight - 20, 700);
 }
 
 resizeCanvas();
 
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
 
 let player;
 let blocks;
+let coins;
+
 let score;
-let gameSpeed;
+let coinCount;
+let lives;
+let level;
+let speed;
+
 let running;
+
+let highScore =
+Number(
+localStorage.getItem("highScore")
+) || 0;
 
 const keys = {};
 
-document.addEventListener("keydown",(e)=>{
-    keys[e.key] = true;
-});
+document.addEventListener(
+"keydown",
+e => keys[e.key] = true
+);
 
-document.addEventListener("keyup",(e)=>{
-    keys[e.key] = false;
-});
+document.addEventListener(
+"keyup",
+e => keys[e.key] = false
+);
 
 function init(){
 
     player = {
         width:60,
         height:25,
-        x:canvas.width/2-30,
-        y:canvas.height-50,
+        x:canvas.width/2 - 30,
+        y:canvas.height - 50,
         speed:8
     };
 
     blocks = [];
+    coins = [];
 
     score = 0;
+    coinCount = 0;
 
-    gameSpeed = 3;
+    lives = 3;
+
+    level = 1;
+
+    speed = 3;
 
     running = true;
 
-    gameOverScreen.style.display = "none";
+    gameOverScreen.style.display =
+    "none";
 
     requestAnimationFrame(gameLoop);
 }
@@ -147,35 +167,64 @@ function init(){
 function spawnBlock(){
 
     blocks.push({
-        x:Math.random()*(canvas.width-40),
+        x:Math.random() *
+        (canvas.width - 40),
+
         y:-40,
+
         width:40,
         height:40
     });
 
 }
 
+function spawnCoin(){
+
+    coins.push({
+        x:Math.random() *
+        (canvas.width - 20),
+
+        y:-20,
+
+        radius:10
+    });
+
+}
+
 function update(){
 
-    if(keys["ArrowLeft"] || keys["a"] || keys["A"]){
+    if(keys["ArrowLeft"] ||
+       keys["a"] ||
+       keys["A"]){
+
         player.x -= player.speed;
     }
 
-    if(keys["ArrowRight"] || keys["d"] || keys["D"]){
+    if(keys["ArrowRight"] ||
+       keys["d"] ||
+       keys["D"]){
+
         player.x += player.speed;
     }
 
-    if(player.x < 0) player.x = 0;
+    if(player.x < 0)
+        player.x = 0;
 
-    if(player.x + player.width > canvas.width){
-        player.x = canvas.width - player.width;
+    if(player.x + player.width >
+       canvas.width){
+
+        player.x =
+        canvas.width -
+        player.width;
     }
 
-    for(let i = blocks.length-1; i >= 0; i--){
+    for(let i = blocks.length-1;
+        i >= 0;
+        i--){
 
         let b = blocks[i];
 
-        b.y += gameSpeed;
+        b.y += speed;
 
         if(
             player.x < b.x + b.width &&
@@ -183,7 +232,16 @@ function update(){
             player.y < b.y + b.height &&
             player.y + player.height > b.y
         ){
-            gameOver();
+
+            blocks.splice(i,1);
+
+            lives--;
+
+            if(lives <= 0){
+                gameOver();
+            }
+
+            continue;
         }
 
         if(b.y > canvas.height){
@@ -194,18 +252,65 @@ function update(){
         }
     }
 
+    for(let i = coins.length-1;
+        i >= 0;
+        i--){
+
+        let c = coins[i];
+
+        c.y += speed;
+
+        if(
+            c.x > player.x &&
+            c.x < player.x +
+            player.width &&
+            c.y > player.y &&
+            c.y < player.y +
+            player.height
+        ){
+
+            coinCount++;
+
+            score += 5;
+
+            coins.splice(i,1);
+
+            continue;
+        }
+
+        if(c.y > canvas.height){
+
+            coins.splice(i,1);
+        }
+    }
+
     if(Math.random() < 0.03){
         spawnBlock();
     }
 
-    gameSpeed = 3 + score * 0.05;
+    if(Math.random() < 0.01){
+        spawnCoin();
+    }
+
+    level =
+    Math.floor(score / 10) + 1;
+
+    speed =
+    3 + (level - 1) * 0.5;
+
 }
 
 function draw(){
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-    ctx.fillStyle = "#00ff88";
+    ctx.fillStyle =
+    "#00ff88";
 
     ctx.fillRect(
         player.x,
@@ -214,9 +319,10 @@ function draw(){
         player.height
     );
 
-    ctx.fillStyle = "#ff4444";
+    ctx.fillStyle =
+    "#ff4444";
 
-    blocks.forEach((b)=>{
+    blocks.forEach(b=>{
 
         ctx.fillRect(
             b.x,
@@ -227,64 +333,136 @@ function draw(){
 
     });
 
-    ctx.fillStyle = "white";
-    ctx.font = "24px Arial";
+    ctx.fillStyle =
+    "gold";
+
+    coins.forEach(c=>{
+
+        ctx.beginPath();
+
+        ctx.arc(
+            c.x,
+            c.y,
+            c.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    });
+
+    ctx.fillStyle =
+    "white";
+
+    ctx.font =
+    "20px Arial";
 
     ctx.fillText(
         "Score: " + score,
-        15,
-        35
+        10,
+        30
+    );
+
+    ctx.fillText(
+        "❤️ " + lives,
+        10,
+        60
+    );
+
+    ctx.fillText(
+        "⭐ " + coinCount,
+        10,
+        90
+    );
+
+    ctx.fillText(
+        "Level: " + level,
+        10,
+        120
+    );
+
+    ctx.fillText(
+        "🏆 " + highScore,
+        10,
+        150
     );
 }
 
 function gameLoop(){
 
-    if(!running) return;
+    if(!running)
+        return;
 
     update();
     draw();
 
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(
+        gameLoop
+    );
 }
 
 function gameOver(){
 
     running = false;
 
-    finalScore.innerHTML =
-        "<h2>Score: " + score + "</h2>";
+    if(score > highScore){
 
-    gameOverScreen.style.display = "flex";
+        highScore = score;
+
+        localStorage.setItem(
+            "highScore",
+            highScore
+        );
+    }
+
+    finalStats.innerHTML =
+    `
+    <h3>Score: ${score}</h3>
+    <h3>Coins: ${coinCount}</h3>
+    <h3>Level: ${level}</h3>
+    <h3>High Score: ${highScore}</h3>
+    `;
+
+    gameOverScreen.style.display =
+    "flex";
 }
 
 function restartGame(){
     init();
 }
 
-/* MOBILE TOUCH CONTROL */
-
-canvas.addEventListener("touchmove",(e)=>{
+canvas.addEventListener(
+"touchmove",
+(e)=>{
 
     e.preventDefault();
 
-    const rect = canvas.getBoundingClientRect();
+    const rect =
+    canvas.getBoundingClientRect();
 
     const touchX =
-        e.touches[0].clientX - rect.left;
+    e.touches[0].clientX -
+    rect.left;
 
     player.x =
-        touchX - player.width/2;
+    touchX -
+    player.width/2;
 
-    if(player.x < 0){
+    if(player.x < 0)
         player.x = 0;
-    }
 
-    if(player.x + player.width > canvas.width){
+    if(player.x +
+       player.width >
+       canvas.width){
+
         player.x =
-        canvas.width - player.width;
+        canvas.width -
+        player.width;
     }
 
-},{passive:false});
+},
+{passive:false}
+);
 
 init();
 
@@ -292,3 +470,4 @@ init();
 
 </body>
 </html>
+```
