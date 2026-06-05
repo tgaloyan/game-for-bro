@@ -1,1 +1,227 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dodge The Blocks</title>
 
+<style>
+    body {
+        margin: 0;
+        background: #111;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    #gameContainer {
+        position: relative;
+    }
+
+    canvas {
+        background: #1e1e1e;
+        border: 3px solid white;
+    }
+
+    #gameOver {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        color: white;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+    }
+
+    #gameOver h1 {
+        color: #ff4d4d;
+        margin-bottom: 15px;
+    }
+
+    #message {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    button {
+        padding: 12px 25px;
+        font-size: 18px;
+        cursor: pointer;
+        border: none;
+        border-radius: 8px;
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <canvas id="game" width="500" height="700"></canvas>
+
+    <div id="gameOver">
+        <h1>Game Over</h1>
+        <div id="message">Ախխխ Տարոն, տունը լավ էիր խաղում</div>
+        <div id="finalScore"></div>
+        <br>
+        <button onclick="restartGame()">Play Again</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const gameOverScreen = document.getElementById("gameOver");
+const finalScoreText = document.getElementById("finalScore");
+
+let player;
+let blocks;
+let score;
+let speed;
+let gameRunning;
+
+const keys = {};
+
+document.addEventListener("keydown", e => {
+    keys[e.key] = true;
+});
+
+document.addEventListener("keyup", e => {
+    keys[e.key] = false;
+});
+
+function init() {
+    player = {
+        x: 220,
+        y: 640,
+        width: 60,
+        height: 30,
+        speed: 7
+    };
+
+    blocks = [];
+    score = 0;
+    speed = 3;
+    gameRunning = true;
+
+    gameOverScreen.style.display = "none";
+
+    spawnBlock();
+    requestAnimationFrame(gameLoop);
+}
+
+function spawnBlock() {
+    blocks.push({
+        x: Math.random() * (canvas.width - 40),
+        y: -40,
+        width: 40,
+        height: 40
+    });
+}
+
+function update() {
+    if (!gameRunning) return;
+
+    if (keys["ArrowLeft"] || keys["a"]) {
+        player.x -= player.speed;
+    }
+
+    if (keys["ArrowRight"] || keys["d"]) {
+        player.x += player.speed;
+    }
+
+    if (player.x < 0) player.x = 0;
+    if (player.x + player.width > canvas.width)
+        player.x = canvas.width - player.width;
+
+    for (let i = blocks.length - 1; i >= 0; i--) {
+        let block = blocks[i];
+        block.y += speed;
+
+        if (
+            player.x < block.x + block.width &&
+            player.x + player.width > block.x &&
+            player.y < block.y + block.height &&
+            player.y + player.height > block.y
+        ) {
+            gameOver();
+        }
+
+        if (block.y > canvas.height) {
+            blocks.splice(i, 1);
+            score++;
+        }
+    }
+
+    if (Math.random() < 0.03) {
+        spawnBlock();
+    }
+
+    speed = 3 + score * 0.05;
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Player
+    ctx.fillStyle = "#00ff99";
+    ctx.fillRect(
+        player.x,
+        player.y,
+        player.width,
+        player.height
+    );
+
+    // Blocks
+    ctx.fillStyle = "#ff4444";
+    blocks.forEach(block => {
+        ctx.fillRect(
+            block.x,
+            block.y,
+            block.width,
+            block.height
+        );
+    });
+
+    // Score
+    ctx.fillStyle = "white";
+    ctx.font = "24px Arial";
+    ctx.fillText("Score: " + score, 15, 35);
+}
+
+function gameLoop() {
+    if (!gameRunning) return;
+
+    update();
+    draw();
+
+    requestAnimationFrame(gameLoop);
+}
+
+function gameOver() {
+    gameRunning = false;
+
+    finalScoreText.innerHTML =
+        "<h2>Score: " + score + "</h2>";
+
+    gameOverScreen.style.display = "flex";
+}
+
+function restartGame() {
+    init();
+}
+
+init();
+</script>
+
+</body>
+</html>
