@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="hy">
 <head>
@@ -64,9 +63,7 @@ button{
     <h1>GAME OVER</h1>
     <br>
 
-    <h2>
-        Ախխխ Տարոն, տունը լավ էիր խաղում 😭
-    </h2>
+    <h2 id="dynamicMessage"></h2>
 
     <br>
 
@@ -89,6 +86,10 @@ document.getElementById("gameOver");
 
 const finalStats =
 document.getElementById("finalStats");
+
+// Ավելացված է dynamicMessage-ի հղումը
+const dynamicMessage = 
+document.getElementById("dynamicMessage");
 
 function resizeCanvas(){
     canvas.width =
@@ -415,6 +416,25 @@ function gameOver(){
         );
     }
 
+    // Ըստ միավորների որոշում ենք համապատասխան հաղորդագրությունը
+    let scoreMessage = "";
+    if (score >= 0 && score <= 49) {
+        scoreMessage = "Ախխխ Տարոն, տունը լավ էիր խաղում 😭";
+    } else if (score >= 50 && score <= 99) {
+        scoreMessage = "Վատ չէր 😎";
+    } else if (score >= 100 && score <= 149) {
+        scoreMessage = "Արդեն պրոֆեսիոնալի նշաններ կան 🔥";
+    } else if (score >= 150 && score <= 249) {
+        scoreMessage = "Տարոն, դու ուղղակի վարպետ ես 🏆";
+    } else if (score >= 250 && score <= 399) {
+        scoreMessage = "Էս արդեն ուրիշ մակարդակ է ⚡";
+    } else if (score >= 400) {
+        scoreMessage = "Տարոն, սենց շարունակես ես չեմ հաղթի քեզ 👑";
+    }
+
+    // Տեքստը տեղադրում ենք էկրանին
+    dynamicMessage.textContent = scoreMessage;
+
     finalStats.innerHTML =
     `
     <h3>Score: ${score}</h3>
@@ -470,4 +490,3 @@ init();
 
 </body>
 </html>
-```
